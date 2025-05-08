@@ -1,0 +1,7 @@
+
+# Ignore INGRESS Perimeter ALB being external and allow access to internet 
+AVD-AWS-0107
+AVD-AWS-0053
+
+# Ignore Isolated NLB Ingress (0.0.0.0/0) as it's public
+AVD-AWS-0104
