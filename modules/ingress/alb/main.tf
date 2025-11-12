@@ -1,22 +1,27 @@
-
-output "workload_external_nlb_ips" {
-  description = "List of External NLB IPs"
-  value       = "${var.workload_external_nlb_ips}" 
+############################
+# Locals from data sources
+############################
+locals {
+  vpc_id            = data.aws_vpcs.filtered_vpcs.ids[0]
+  public_subnet_ids = data.aws_subnets.filtered_subnets.ids
 }
 
-# ALB Security Group
+############################
+# Security Group (conditional)
+############################
 resource "aws_security_group" "alb_sg" {
+  count       = var.external_ingress ? 1 : 0
   name_prefix = "${var.tenant}-external-${var.account_id}-"
   description = "Allow inbound traffic to ALB"
-
-  vpc_id = data.aws_vpcs.filtered_vpcs.ids[0]
+  vpc_id      = local.vpc_id
+  tags        = var.tags
 
   ingress {
     description = "Allow traffic from Internet"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Change as needed
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -24,32 +29,37 @@ resource "aws_security_group" "alb_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/8","172.16.0.0/16"] # Adjust as per your VPC CIDR
+    cidr_blocks = ["10.0.0.0/8", "172.16.0.0/16"]
   }
-  
 }
 
-# Create ALB
+############################
+# ALB (conditional)
+############################
 resource "aws_lb" "tenant_alb" {
+  count              = var.external_ingress ? 1 : 0
   name               = "${var.tenant}-external-${var.account_id}"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = data.aws_subnets.filtered_subnets.ids
+  security_groups    = [aws_security_group.alb_sg[0].id]
+  subnets            = local.public_subnet_ids
 
-  drop_invalid_header_fields = true  # Enable dropping invalid headers
-
+  drop_invalid_header_fields = true
   enable_deletion_protection = false
-  
+  tags                       = var.tags
 }
 
-# Target Group using External NLB IPs without VPC association
+############################
+# Target Group (conditional)
+############################
 resource "aws_lb_target_group" "tenant_target_group" {
+  count       = var.external_ingress ? 1 : 0
   name        = "${var.tenant}-external-${var.account_id}-tg"
   port        = 443
   protocol    = "HTTPS"
-  target_type = "ip"  # IP addresses can be from any network
-  vpc_id      = data.aws_vpcs.filtered_vpcs.ids[0]  # Specify the VPC ID where the ALB exists
+  target_type = "ip"
+  vpc_id      = local.vpc_id
+  tags        = var.tags
 
   health_check {
     path                = "/"
@@ -61,36 +71,43 @@ resource "aws_lb_target_group" "tenant_target_group" {
     unhealthy_threshold = 2
     matcher             = "200,404"
   }
-
 }
 
-# Attach workload NLB IPs to the target group
+############################
+# Register NLB IPs (conditional)
+############################
 resource "aws_lb_target_group_attachment" "tg_attachment" {
-  for_each         = toset(jsondecode(var.workload_external_nlb_ips))
-  target_group_arn = aws_lb_target_group.tenant_target_group.arn
-  target_id        = each.value
-  port             = 443
-  availability_zone   = "all"  # To support external IPs
+  for_each          = var.external_ingress ? toset(var.workload_external_nlb_ips) : []
+  target_group_arn  = aws_lb_target_group.tenant_target_group[0].arn
+  target_id         = each.value
+  port              = 443
+  availability_zone = "all"
 }
 
-# HTTPS Listener using the ACM cert ARN from acm.tf output
+############################
+# HTTPS Listener (conditional)
+############################
 resource "aws_lb_listener" "https_listener" {
-  load_balancer_arn = aws_lb.tenant_alb.arn
+  count             = var.external_ingress ? 1 : 0
+  load_balancer_arn = aws_lb.tenant_alb[0].arn
   port              = 443
   protocol          = "HTTPS"
-
-  ssl_policy      = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn = var.acm_certificate_arn
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = var.acm_certificate_arn
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tenant_target_group.arn
+    target_group_arn = aws_lb_target_group.tenant_target_group[0].arn
   }
+
+  tags = var.tags
 }
 
-
-# Wait for alb creation so that eni's can be fetched when ready
+############################
+# Optional wait (conditional)
+############################
 resource "time_sleep" "wait_60_seconds" {
-  depends_on = [aws_lb.tenant_alb]
+  count           = var.external_ingress ? 1 : 0
+  depends_on      = [aws_lb.tenant_alb]
   create_duration = "60s"
 }

@@ -17,9 +17,9 @@ resource "time_sleep" "wait_30_seconds" {
 }
 
 
-# Create Route53 A Record Alias for External ALB
+# Create Route53 A Record Alias for External ALB (only when external_ingress = true)
 resource "aws_route53_record" "external_alb" {
-  count   = var.alb_dns_ready ? 1 : 0
+  count   = var.external_ingress ? 1 : 0
   zone_id = var.zone_id
   name    = "*.${var.domain_name}"
   type    = "A"

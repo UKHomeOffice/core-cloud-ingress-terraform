@@ -1,16 +1,22 @@
-# Outputs
+# ALB-specific outputs (null when external_ingress = false)
 output "alb_dns_name" {
-  value = aws_lb.tenant_alb.dns_name
+  description = "ALB DNS name (empty when disabled)"
+  value       = var.external_ingress ? aws_lb.tenant_alb[0].dns_name : "no-public-ingress-no-perimeter-alb"
 }
+
 
 output "alb_hosted_zone_id" {
-  value = data.aws_lb_hosted_zone_id.main.id
+  description = "Hosted zone ID for ALB DNS names in this region"
+  value       = data.aws_lb_hosted_zone_id.main.id
 }
 
+# Data-source outputs are always safe
 output "vpc_id" {
-  value = data.aws_vpcs.filtered_vpcs.ids[0]
+  description = "VPC ID matched by var.vpc_name"
+  value       = local.vpc_id
 }
 
 output "public_subnets" {
-  value = data.aws_subnets.filtered_subnets.ids
+  description = "Subnet IDs matched by var.public_subnet_filter in the selected VPC"
+  value       = local.public_subnet_ids
 }
