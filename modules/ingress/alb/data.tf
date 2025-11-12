@@ -6,7 +6,7 @@ data "aws_vpcs" "filtered_vpcs" {
   }
 }
 
-# Fetch private subnets based on the Name tag
+# Fetch public subnets based on the Name tag and VPC
 data "aws_subnets" "filtered_subnets" {
   filter {
     name   = "tag:Name"
@@ -19,8 +19,8 @@ data "aws_subnets" "filtered_subnets" {
   }
 }
 
+# Hosted zone ID used by ALB DNS names in this region
 data "aws_lb_hosted_zone_id" "main" {}
-
 
 
 
