@@ -35,7 +35,7 @@ variable "alb_hosted_zone_id" {
 variable "external_ingress" {
   description = "If false, do not create any external ingress resources"
   type        = bool
-  default     = true
+  default     = false
 }
 variable "alb_dns_ready" {
   description = "Flag to determine if the ALB Route 53 record should be created"

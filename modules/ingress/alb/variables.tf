@@ -1,7 +1,7 @@
 variable "external_ingress" {
   description = "If false, do not create any external ingress resources"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "workload_external_nlb_ips" {
