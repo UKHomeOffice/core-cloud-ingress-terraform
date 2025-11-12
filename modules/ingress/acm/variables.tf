@@ -34,3 +34,9 @@ variable "acm_validation_enabled" {
   type    = bool
   default = false  # Set to false for skipping validation during plan
 }
+
+variable "external_ingress" {
+  description = "If false, skip creating external ingress/ACM resources"
+  type        = bool
+  default     = true
+}

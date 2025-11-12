@@ -1,11 +1,19 @@
+variable "external_ingress" {
+  description = "If false, do not create any external ingress resources"
+  type        = bool
+  default     = true
+}
+
 variable "workload_external_nlb_ips" {
   description = "List of External NLB IPs"
+  type        = list(string)
   default     = ["1.2.3.4", "5.6.7.8", "9.1.2.3"]
 }
 
 variable "tags" {
   type        = map(string)
   description = "Tags to apply to AWS resources"
+  default     = {}
 }
 
 variable "domain_name" {
@@ -28,21 +36,19 @@ variable "account_id" {
   type        = string
 }
 
-
 variable "public_subnet_filter" {
-  type        = string
-  default = "cc-ingress-notprod-public*"
   description = "Name tag filter for public subnets"
+  type        = string
+  default     = "cc-ingress-notprod-public*"
 }
 
 variable "vpc_name" {
-  type        = string
   description = "Name of the VPC"
+  type        = string
 }
 
 variable "acm_certificate_arn" {
-  type        = string
   description = "ACM Cert ARN"
+  type        = string
 }
-
 

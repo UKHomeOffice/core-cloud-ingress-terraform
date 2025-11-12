@@ -1,16 +1,14 @@
+
+# ACM certificate (only when enabled)
 resource "aws_acm_certificate" "cert" {
+  count             = var.external_ingress ? 1 : 0
   domain_name       = "*.${var.domain_name}"
   validation_method = "DNS"
-
-  # Optional: Add SANs (Subject Alternative Names) if required
-  # subject_alternative_names = ["www.${var.domain_name}"]
-
 
   lifecycle {
     create_before_destroy = true
   }
 
-  # Apply tags if required
   tags = merge(
     var.tags,
     {
@@ -18,35 +16,32 @@ resource "aws_acm_certificate" "cert" {
       Tenant      = var.tenant
     }
   )
-
-
 }
 
-
+# Output safe when disabled
 output "acm_validation_records" {
   description = "ACM Certificate DNS Validation Records"
-  value = [
-    for dvo in aws_acm_certificate.cert.domain_validation_options : {
-      name  = dvo.resource_record_name
-      type  = dvo.resource_record_type
-      value = dvo.resource_record_value
-    }
-  ]
+  value = var.external_ingress
+    ? [
+        for dvo in aws_acm_certificate.cert[0].domain_validation_options : {
+          name  = dvo.resource_record_name
+          type  = dvo.resource_record_type
+          value = dvo.resource_record_value
+        }
+      ]
+    : []
 }
 
-
-
-# CREATED ONLY FOR WORKLOAD ACCOUNTS
-# Create DNS records for certificate validation in Route 53
+# DNS records for validation — only for workload accounts AND when enabled
 resource "aws_route53_record" "cert_validation_records" {
-  for_each = var.workload ? {
-    for dvo in aws_acm_certificate.cert.domain_validation_options :
-    dvo.domain_name => {
-      name   = dvo.resource_record_name
-      type   = dvo.resource_record_type
-      value  = dvo.resource_record_value
-    }
-  } : {}
+  for_each = (var.external_ingress && var.workload && length(try(aws_acm_certificate.cert[0].domain_validation_options, [])) > 0) ? {
+        for dvo in aws_acm_certificate.cert[0].domain_validation_options :
+        dvo.domain_name => {
+          name   = dvo.resource_record_name
+          type   = dvo.resource_record_type
+          value  = dvo.resource_record_value
+        }
+      } : {}
 
   zone_id = var.hosted_zone_id
   name    = each.value.name
@@ -55,20 +50,20 @@ resource "aws_route53_record" "cert_validation_records" {
   ttl     = 60
 
   lifecycle {
-    create_before_destroy = true  # Create new record before destroying the old one
+    create_before_destroy = true
   }
 }
 
-
-# After the DNS records are created, validate the certificate
+# Certificate validation — only when enabled AND workload flow
 resource "aws_acm_certificate_validation" "cert_validation" {
-  count   = var.workload && var.acm_validation_enabled ? 1 : 0  # Only create validation if both conditions are true
-  certificate_arn         = aws_acm_certificate.cert.arn
-  validation_record_fqdns = [for r in aws_route53_record.cert_validation_records : r.fqdn]
+  count = (var.external_ingress && var.workload && var.acm_validation_enabled) ? 1 : 0
+
+  certificate_arn         = aws_acm_certificate.cert[0].arn
+  validation_record_fqdns = [for r in aws_route53_record.cert_validation_records : r.value.name] # or r.fqdn if preferred
 
   depends_on = [aws_route53_record.cert_validation_records]
 
   timeouts {
-    create = "5m"  # Adjust timeout based on your needs
+    create = "5m"
   }
 }

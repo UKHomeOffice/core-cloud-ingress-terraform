@@ -1,26 +1,31 @@
+variable "external_ingress" {
+  description = "If false, skip creating any external DNS resources"
+  type        = bool
+  default     = true
+}
 
+# Create a zone only if external_ingress is true AND no zone_id provided
 resource "aws_route53_zone" "aws_r53_zone" {
-  count = var.zone_id == "" ? 1 : 0  # Create a new zone only if no zone_id is provided
+  count = (var.external_ingress && var.zone_id == "") ? 1 : 0
   name  = var.domain_name
 }
 
-# Use the provided zone ID or the one created by Terraform
+# Use provided zone_id, otherwise created one (or null if not created)
 locals {
-  effective_zone_id = var.zone_id != "" ? var.zone_id : aws_route53_zone.aws_r53_zone[0].zone_id
+  effective_zone_id = var.zone_id != "" ? var.zone_id : try(aws_route53_zone.aws_r53_zone[0].zone_id, null)
 }
 
-# Wait for zone creation (This will be needed for ACM)
+# Wait only if we created the zone (and external_ingress is true)
 resource "time_sleep" "wait_30_seconds" {
-  count = var.zone_id == "" ? 1 : 0  # Wait only if a new zone is created
-  depends_on = [aws_route53_zone.aws_r53_zone]
+  count           = (var.external_ingress && var.zone_id == "") ? 1 : 0
+  depends_on      = [aws_route53_zone.aws_r53_zone]
   create_duration = "30s"
 }
 
-
-# Create Route53 A Record Alias for External ALB
+# A-record alias only when external_ingress is true and ALB DNS is ready
 resource "aws_route53_record" "external_alb" {
-  count   = var.alb_dns_ready ? 1 : 0
-  zone_id = var.zone_id
+  count   = (var.external_ingress && var.alb_dns_ready) ? 1 : 0
+  zone_id = local.effective_zone_id
   name    = "*.${var.domain_name}"
   type    = "A"
 
@@ -31,9 +36,9 @@ resource "aws_route53_record" "external_alb" {
   }
 }
 
-
+# ACM validation records only when external_ingress is true
 resource "aws_route53_record" "acm_validation" {
-  for_each = { for record in var.acm_records : record.name => record if length(var.acm_records) > 0 }
+  for_each = (var.external_ingress && length(var.acm_records) > 0) ? { for record in var.acm_records : record.name => record } : {}
 
   zone_id = local.effective_zone_id
   name    = each.value.name
@@ -42,7 +47,8 @@ resource "aws_route53_record" "acm_validation" {
   records = [each.value.value]
 }
 
-# Output the hosted zone ID
+# Output is null when external_ingress is false
 output "hosted_zone_id" {
-  value = local.effective_zone_id
+  description = "Hosted zone ID used for external ingress (null if disabled)"
+  value       = var.external_ingress ? local.effective_zone_id : null
 }

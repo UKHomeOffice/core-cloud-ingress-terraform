@@ -49,3 +49,9 @@ variable "zone_id" {
   description = "The hosted zone ID for Route 53"
   type        = string
 }
+
+variable "external_ingress" {
+  description = "If false, skip creating any external DNS resources"
+  type        = bool
+  default     = true
+}
