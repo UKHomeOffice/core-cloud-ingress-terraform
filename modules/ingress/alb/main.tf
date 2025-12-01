@@ -47,6 +47,13 @@ resource "aws_lb" "tenant_alb" {
   drop_invalid_header_fields = true
   enable_deletion_protection = false
   tags                       = var.tags
+
+  access_logs {
+    enabled = true
+    bucket  = "aws-accelerator-elb-access-logs-905418430070-eu-west-2"
+    prefix  = "${var.perimeter_account_id}/elb-${var.tenant}-external-${var.account_id}"
+  }
+
 }
 
 ############################

@@ -51,7 +51,3 @@ resource "aws_route53_record" "acm_validation" {
   records = [each.value.value]
 }
 
-# Output the hosted zone ID
-output "hosted_zone_id" {
-  value = local.effective_zone_id
-}
