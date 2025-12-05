@@ -36,6 +36,11 @@ variable "account_id" {
   type        = string
 }
 
+variable "perimeter_account_id" {
+  description = "AWS Perimeter Account ID"
+  type        = string
+}
+
 variable "public_subnet_filter" {
   description = "Name tag filter for public subnets"
   type        = string
