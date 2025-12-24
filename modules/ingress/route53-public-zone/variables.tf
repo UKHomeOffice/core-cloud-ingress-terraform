@@ -18,8 +18,6 @@ variable "acm_records" {
   default = []
 }
 
-
-
 variable "external_alb_dns" {
   description = "The DNS name of the external ALB"
   type        = string
@@ -45,10 +43,5 @@ variable "alb_dns_ready" {
 
 variable "domain_name" {
   description = "The domain name for the Route 53 record"
-  type        = string
-}
-
-variable "zone_id" {
-  description = "The hosted zone ID for Route 53"
   type        = string
 }

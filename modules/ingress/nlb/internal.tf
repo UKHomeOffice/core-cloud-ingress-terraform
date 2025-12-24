@@ -1,4 +1,3 @@
-
 # Internal NLB
 resource "aws_lb" "internal_nlb" {
   name                       = "${var.ingress_lb_group_name}-internal"
@@ -29,7 +28,6 @@ resource "aws_lb" "internal_nlb" {
     }
   )
 }
-
 
 resource "aws_security_group" "internal_nlb_sg" {
   name        = "${var.tenant}-internal-sg"

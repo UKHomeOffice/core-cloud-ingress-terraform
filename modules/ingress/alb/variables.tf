@@ -56,4 +56,3 @@ variable "acm_certificate_arn" {
   description = "ACM Cert ARN"
   type        = string
 }
-

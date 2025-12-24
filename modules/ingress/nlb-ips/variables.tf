@@ -1,4 +1,3 @@
-
 variable "tenant" {
   description = "The tenant name"
   type        = string

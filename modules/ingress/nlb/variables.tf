@@ -21,5 +21,3 @@ variable "ingress_lb_group_name" {
   description = "Ingress LB tag name"
   type        = string
 }
-
-

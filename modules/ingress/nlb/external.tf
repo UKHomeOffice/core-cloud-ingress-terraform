@@ -27,7 +27,6 @@ resource "aws_lb" "external_nlb" {
   )
 }
 
-
 resource "aws_security_group" "external_nlb_sg" {
   name        = "${var.tenant}-external-sg"
   description = "Security group for external NLB"
