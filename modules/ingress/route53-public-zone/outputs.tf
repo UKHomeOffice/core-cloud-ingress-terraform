@@ -1,8 +1,3 @@
-
-output "hosted_zone_id" {
-  value = local.effective_zone_id
-}
-
 output "acm_records" {
   description = "ACM DNS validation Route53 records created by this module."
   value = [

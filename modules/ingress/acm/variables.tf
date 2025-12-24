@@ -23,14 +23,7 @@ variable "workload" {
   default = false
 }
 
-
-variable "hosted_zone_id" {
-  description = "The zone id"
-  type        = string
-  default = ""
-}
-
 variable "acm_validation_enabled" {
   type    = bool
-  default = false  # Set to false for skipping validation during plan
+  default = false # Set to false for skipping validation during plan
 }

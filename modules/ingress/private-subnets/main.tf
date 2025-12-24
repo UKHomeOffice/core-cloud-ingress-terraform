@@ -13,7 +13,7 @@ data "aws_vpc" "selected" {
 # Create Subnet in Availability Zone A
 resource "aws_subnet" "subnet_a" {
   vpc_id            = data.aws_vpc.selected.id
-  cidr_block        = cidrsubnet(data.aws_vpc.selected.cidr_block, 3, 5)  # x.x.x.160/27
+  cidr_block        = cidrsubnet(data.aws_vpc.selected.cidr_block, 3, 5) # x.x.x.160/27
   availability_zone = "eu-west-2a"
 
   tags = merge({
@@ -24,7 +24,7 @@ resource "aws_subnet" "subnet_a" {
 # Create Subnet in Availability Zone B
 resource "aws_subnet" "subnet_b" {
   vpc_id            = data.aws_vpc.selected.id
-  cidr_block        = cidrsubnet(data.aws_vpc.selected.cidr_block, 3, 6)  # x.x.x.192/27
+  cidr_block        = cidrsubnet(data.aws_vpc.selected.cidr_block, 3, 6) # x.x.x.192/27
   availability_zone = "eu-west-2b"
 
   tags = merge({
@@ -35,7 +35,7 @@ resource "aws_subnet" "subnet_b" {
 # Create Subnet in Availability Zone C
 resource "aws_subnet" "subnet_c" {
   vpc_id            = data.aws_vpc.selected.id
-  cidr_block        = cidrsubnet(data.aws_vpc.selected.cidr_block, 3, 7)  # x.x.x.224/27
+  cidr_block        = cidrsubnet(data.aws_vpc.selected.cidr_block, 3, 7) # x.x.x.224/27
   availability_zone = "eu-west-2c"
 
   tags = merge({

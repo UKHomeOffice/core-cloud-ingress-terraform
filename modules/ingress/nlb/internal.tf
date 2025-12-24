@@ -1,22 +1,22 @@
 
 # Internal NLB
 resource "aws_lb" "internal_nlb" {
-  name               = "${var.ingress_lb_group_name}-internal"
-  internal           = true
-  load_balancer_type = "network"
+  name                       = "${var.ingress_lb_group_name}-internal"
+  internal                   = true
+  load_balancer_type         = "network"
   enable_deletion_protection = false
 
 
   subnet_mapping {
-    subnet_id     = data.aws_subnets.filtered_subnets.ids[0]
+    subnet_id = data.aws_subnets.filtered_subnets.ids[0]
   }
 
   subnet_mapping {
-    subnet_id     = data.aws_subnets.filtered_subnets.ids[1]
-      }
+    subnet_id = data.aws_subnets.filtered_subnets.ids[1]
+  }
 
   subnet_mapping {
-    subnet_id     = data.aws_subnets.filtered_subnets.ids[2]
+    subnet_id = data.aws_subnets.filtered_subnets.ids[2]
   }
 
   # Attach the security group
