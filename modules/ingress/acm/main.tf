@@ -11,11 +11,7 @@ resource "aws_acm_certificate" "cert" {
 
   # Apply tags if required
   tags = merge(
-    var.tags,
-    {
-      Environment = var.environment
-      Tenant      = var.tenant
-    }
+    var.tags
   )
 }
 
