@@ -8,16 +8,6 @@ variable "domain_name" {
   type        = string
 }
 
-variable "environment" {
-  description = "The environment (prod/non-prod)"
-  type        = string
-}
-
-variable "tenant" {
-  description = "The tenant name"
-  type        = string
-}
-
 variable "workload" {
   type    = bool
   default = false
