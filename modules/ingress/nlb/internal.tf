@@ -30,7 +30,7 @@ resource "aws_lb" "internal_nlb" {
 }
 
 resource "aws_security_group" "internal_nlb_sg" {
-  name        = "${var.tenant}-internal-sg"
+  name        = var.tenant == "" ? "ingress-internal-sg" : "${var.tenant}-internal-sg"
   description = "Security group for internal NLB"
   vpc_id      = data.aws_vpcs.filtered_vpcs.ids[0]
 
@@ -64,7 +64,7 @@ resource "aws_security_group" "internal_nlb_sg" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.tenant}-internal-sg"
+      Name = var.tenant == "" ? "ingress-internal-sg" : "${var.tenant}-internal-sg"
     }
   )
 }

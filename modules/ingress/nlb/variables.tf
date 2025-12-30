@@ -17,6 +17,7 @@ variable "tenant" {
   description = "The tenant name"
   type        = string
 }
+
 variable "ingress_lb_group_name" {
   description = "Ingress LB tag name"
   type        = string

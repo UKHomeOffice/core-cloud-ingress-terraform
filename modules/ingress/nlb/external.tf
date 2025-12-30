@@ -28,7 +28,7 @@ resource "aws_lb" "external_nlb" {
 }
 
 resource "aws_security_group" "external_nlb_sg" {
-  name        = "${var.tenant}-external-sg"
+  name        = var.tenant == "" ? "ingress-external-sg" : "${var.tenant}-external-sg"
   description = "Security group for external NLB"
   vpc_id      = data.aws_vpcs.filtered_vpcs.ids[0]
 
@@ -62,7 +62,7 @@ resource "aws_security_group" "external_nlb_sg" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.tenant}-external-sg"
+      Name = var.tenant == "" ? "ingress-external-sg" : "${var.tenant}-external-sg"
     }
   )
 }

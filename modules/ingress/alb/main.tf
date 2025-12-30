@@ -11,7 +11,7 @@ locals {
 ############################
 resource "aws_security_group" "alb_sg" {
   count       = var.external_ingress ? 1 : 0
-  name_prefix = "${var.tenant}-external-${var.account_id}-"
+  name_prefix = var.tenant == "" ? "ingress-external-${var.account_id}-" : "${var.tenant}-external-${var.account_id}-"
   description = "Allow inbound traffic to ALB"
   vpc_id      = local.vpc_id
   tags        = var.tags
@@ -38,7 +38,7 @@ resource "aws_security_group" "alb_sg" {
 ############################
 resource "aws_lb" "tenant_alb" {
   count              = var.external_ingress ? 1 : 0
-  name               = "${var.tenant}-external-${var.account_id}"
+  name               = var.tenant == "" ? "ingress-external-${var.account_id}" : "${var.tenant}-external-${var.account_id}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg[0].id]
@@ -51,7 +51,7 @@ resource "aws_lb" "tenant_alb" {
   access_logs {
     enabled = true
     bucket  = "aws-accelerator-elb-access-logs-905418430070-eu-west-2"
-    prefix  = "${var.perimeter_account_id}/elb-${var.tenant}-external-${var.account_id}"
+    prefix  = var.tenant == "" ? "${var.perimeter_account_id}/elb-ingress-external-${var.account_id}" : "${var.perimeter_account_id}/elb-${var.tenant}-external-${var.account_id}"
   }
 
 }
@@ -61,7 +61,7 @@ resource "aws_lb" "tenant_alb" {
 ############################
 resource "aws_lb_target_group" "tenant_target_group" {
   count       = var.external_ingress ? 1 : 0
-  name        = "${var.tenant}-external-${var.account_id}-tg"
+  name        = var.tenant == "" ? "ingress-external-${var.account_id}-tg" : "${var.tenant}-external-${var.account_id}-tg"
   port        = 443
   protocol    = "HTTPS"
   target_type = "ip"
