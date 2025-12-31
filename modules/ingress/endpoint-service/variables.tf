@@ -1,28 +1,34 @@
 variable "acceptance_required" {
-  type    = bool
-  default = true
+  description = "Whether or not VPC endpoint connection requests to the service must be accepted by the service owner - true or false."
+  type        = bool
+  default     = true
 }
 
 variable "allowed_principals" {
-  type    = set(string)
-  default = []
+  description = "The ARNs of one or more principals allowed to discover the endpoint service."
+  type        = set(string)
+  default     = []
 }
 
 variable "network_load_balancer_arns" {
-  type    = set(string)
+  description = "Amazon Resource Names (ARNs) of one or more Network Load Balancers for the endpoint service."
+  type        = set(string)
 }
 
 variable "principal_arns" {
-  type    = set(string)
-  default = []
+  description = "The ARN of the principals allowed to discover the VPC endpoint service."
+  type        = set(string)
+  default     = []
 }
 
 variable "private_dns_name" {
-  type    = string
-  default = null
+  description = "The private DNS name for the service."
+  type        = string
+  default     = null
 }
 
 variable "private_dns_verification" {
-  type    = bool
-  default = false
+  description = "Begins the verification process. The service provider should add a record to the DNS server before setting this to true."
+  type        = bool
+  default     = false
 }
