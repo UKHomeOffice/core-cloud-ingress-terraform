@@ -1,5 +1,5 @@
 # Fetch network interfaces for the external NLB
-data "aws_network_interfaces" "external_nlb_ifs" {
+data "aws_network_interfaces" "external_nlb_ips" {
   filter {
     name   = "description"
     values = ["ELB net/${var.ingress_lb_group_name}-external/*"]
@@ -8,7 +8,7 @@ data "aws_network_interfaces" "external_nlb_ifs" {
 }
 
 locals {
-  external_nlb_interface_ids = flatten(["${data.aws_network_interfaces.external_nlb_ifs.ids}"])
+  external_nlb_interface_ids = flatten(["${data.aws_network_interfaces.external_nlb_ips.ids}"])
 }
 
 data "aws_network_interface" "external_nlb_ips" {
