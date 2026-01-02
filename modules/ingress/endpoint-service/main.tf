@@ -1,16 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.99.1"
-    }
-  }
-}
-
-provider "aws" {
-  region = "eu-west-2"
-}
-
 resource "aws_vpc_endpoint_service" "default" {
   acceptance_required        = var.acceptance_required
   allowed_principals         = var.allowed_principals
