@@ -8,7 +8,7 @@ data "aws_network_interfaces" "external_nlb_ips" {
 }
 
 locals {
-  external_nlb_interface_ids = flatten(["${data.aws_network_interfaces.external_nlb_ips.ids}"])
+  external_nlb_interface_ids = sort(flatten(["${data.aws_network_interfaces.external_nlb_ips.ids}"]))
 }
 
 data "aws_network_interface" "external_nlb_ips" {
