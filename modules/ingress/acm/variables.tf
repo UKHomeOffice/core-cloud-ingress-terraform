@@ -17,3 +17,8 @@ variable "acm_validation_enabled" {
   type    = bool
   default = false # Set to false for skipping validation during plan
 }
+
+variable "tenant" {
+  description = "The tenant name"
+  type        = string
+}
