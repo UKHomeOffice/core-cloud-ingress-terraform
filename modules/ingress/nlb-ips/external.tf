@@ -12,7 +12,7 @@ locals {
 }
 
 data "aws_network_interface" "external_nlb_ips" {
-  count = var.apply_only ? length(local.external_nlb_interface_ids) : 0
+  count = length(local.external_nlb_interface_ids)
   id    = local.external_nlb_interface_ids[count.index]
 }
 
