@@ -1,17 +1,17 @@
 # external NLB
 resource "aws_lb" "external_nlb" {
-  name               = "${var.ingress_lb_group_name}-external"
-  internal           = false
-  load_balancer_type = "network"
+  name                       = "${var.ingress_lb_group_name}-external"
+  internal                   = false
+  load_balancer_type         = "network"
   enable_deletion_protection = false
 
   subnet_mapping {
-    subnet_id     = data.aws_subnets.filtered_subnets.ids[0]
+    subnet_id = data.aws_subnets.filtered_subnets.ids[0]
   }
 
   subnet_mapping {
-    subnet_id     = data.aws_subnets.filtered_subnets.ids[1]
-      }
+    subnet_id = data.aws_subnets.filtered_subnets.ids[1]
+  }
 
 
   # Attach the security group
@@ -24,7 +24,6 @@ resource "aws_lb" "external_nlb" {
     }
   )
 }
-
 
 resource "aws_security_group" "external_nlb_sg" {
   name        = "${var.ingress_lb_group_name}-external-sg"
@@ -65,4 +64,3 @@ resource "aws_security_group" "external_nlb_sg" {
     }
   )
 }
-

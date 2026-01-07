@@ -26,5 +26,3 @@ output "vpc_id" {
 output "private_subnets" {
   value = data.aws_subnets.filtered_subnets.ids
 }
-
-

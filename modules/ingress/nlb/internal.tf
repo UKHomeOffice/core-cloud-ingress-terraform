@@ -1,22 +1,21 @@
-
 # Internal NLB
 resource "aws_lb" "internal_nlb" {
-  name               = "${var.ingress_lb_group_name}-internal"
-  internal           = true
-  load_balancer_type = "network"
+  name                       = "${var.ingress_lb_group_name}-internal"
+  internal                   = true
+  load_balancer_type         = "network"
   enable_deletion_protection = false
 
 
   subnet_mapping {
-    subnet_id     = data.aws_subnets.filtered_subnets.ids[0]
+    subnet_id = data.aws_subnets.filtered_subnets.ids[0]
   }
 
   subnet_mapping {
-    subnet_id     = data.aws_subnets.filtered_subnets.ids[1]
-      }
+    subnet_id = data.aws_subnets.filtered_subnets.ids[1]
+  }
 
   subnet_mapping {
-    subnet_id     = data.aws_subnets.filtered_subnets.ids[2]
+    subnet_id = data.aws_subnets.filtered_subnets.ids[2]
   }
 
   # Attach the security group
@@ -30,9 +29,8 @@ resource "aws_lb" "internal_nlb" {
   )
 }
 
-
 resource "aws_security_group" "internal_nlb_sg" {
-  name        = "${var.tenant}-internal-sg"
+  name        = var.tenant == "" ? "ingress-internal-sg" : "${var.tenant}-internal-sg"
   description = "Security group for internal NLB"
   vpc_id      = data.aws_vpcs.filtered_vpcs.ids[0]
 
@@ -66,7 +64,7 @@ resource "aws_security_group" "internal_nlb_sg" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.tenant}-internal-sg"
+      Name = var.tenant == "" ? "ingress-internal-sg" : "${var.tenant}-internal-sg"
     }
   )
 }

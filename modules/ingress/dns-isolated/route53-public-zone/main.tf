@@ -1,6 +1,5 @@
-
 resource "aws_route53_record" "external_nlb" {
-  zone_id = var.hosted_zone_id # This is for the Route 53 hosted zone
+  zone_id = data.aws_route53_zone.selected.zone_id # This is for the Route 53 hosted zone
   name    = "*.${var.domain_name}"
   type    = "A"
 

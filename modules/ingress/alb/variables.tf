@@ -21,11 +21,6 @@ variable "domain_name" {
   type        = string
 }
 
-variable "environment" {
-  description = "The environment (prod/non-prod)"
-  type        = string
-}
-
 variable "tenant" {
   description = "The tenant name"
   type        = string
@@ -56,4 +51,3 @@ variable "acm_certificate_arn" {
   description = "ACM Cert ARN"
   type        = string
 }
-
