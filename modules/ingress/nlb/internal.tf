@@ -24,23 +24,28 @@ resource "aws_lb" "internal_nlb" {
   tags = merge(
     var.tags,
     {
-      "eks_ingress_lb_group_name" = "${var.ingress_lb_group_name}-internal"
+      "ingress_lb_group_name" = "${var.ingress_lb_group_name}-internal"
     }
   )
 }
+
 
 resource "aws_security_group" "internal_nlb_sg" {
   name        = var.tenant == "" ? "ingress-internal-sg" : "${var.tenant}-internal-sg"
   description = "Security group for internal NLB"
   vpc_id      = data.aws_vpcs.filtered_vpcs.ids[0]
 
-  # Allow traffic from the VPC for internal communication
+  # Allow traffic from the VPC / private ranges for internal communication
   ingress {
     description = "Allow traffic from private subnets"
     from_port   = 443
     to_port     = 443
     protocol    = "TCP"
-    cidr_blocks = ["10.0.0.0/8"] # Adjust as per your VPC CIDR
+    cidr_blocks = [
+      "10.0.0.0/8",
+      "100.64.0.0/16",
+      "172.16.0.0/12",
+    ]
   }
 
   # Allow traffic from other instances using the same security group
@@ -52,13 +57,17 @@ resource "aws_security_group" "internal_nlb_sg" {
     self        = true
   }
 
-  # Allow all egress traffic
+  # Allow all egress traffic (restricted to private ranges)
   egress {
     description = "Allow Outbound traffic from NLB"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/8"]
+    cidr_blocks = [
+      "10.0.0.0/8",
+      "100.64.0.0/16",
+      "172.16.0.0/12",
+    ]
   }
 
   tags = merge(
@@ -67,4 +76,5 @@ resource "aws_security_group" "internal_nlb_sg" {
       Name = var.tenant == "" ? "ingress-internal-sg" : "${var.tenant}-internal-sg"
     }
   )
+
 }
