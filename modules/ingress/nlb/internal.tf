@@ -30,45 +30,13 @@ resource "aws_lb" "internal_nlb" {
 }
 
 
+############################################
+# Security Group (no inline ingress/egress)
+############################################
 resource "aws_security_group" "internal_nlb_sg" {
   name        = var.tenant == "" ? "ingress-internal-sg" : "${var.tenant}-internal-sg"
   description = "Security group for internal NLB"
   vpc_id      = data.aws_vpcs.filtered_vpcs.ids[0]
-
-  # Allow traffic from the VPC / private ranges for internal communication
-  ingress {
-    description = "Allow traffic from private subnets"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "TCP"
-    cidr_blocks = [
-      "10.0.0.0/8",
-      "100.64.0.0/16",
-      "172.16.0.0/12",
-    ]
-  }
-
-  # Allow traffic from other instances using the same security group
-  ingress {
-    description = "Allow traffic from NLB for health checks"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "TCP"
-    self        = true
-  }
-
-  # Allow all egress traffic (restricted to private ranges)
-  egress {
-    description = "Allow Outbound traffic from NLB"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = [
-      "10.0.0.0/8",
-      "100.64.0.0/16",
-      "172.16.0.0/12",
-    ]
-  }
 
   tags = merge(
     var.tags,
@@ -76,5 +44,84 @@ resource "aws_security_group" "internal_nlb_sg" {
       Name = var.tenant == "" ? "ingress-internal-sg" : "${var.tenant}-internal-sg"
     }
   )
+}
 
+############################################
+# Ingress: allow 443 from private ranges
+############################################
+resource "aws_vpc_security_group_ingress_rule" "allow_443_from_private_ranges" {
+  security_group_id = aws_security_group.internal_nlb_sg.id
+
+  description = "Allow traffic from private subnets"
+  ip_protocol = "tcp"
+  from_port   = 443
+  to_port     = 443
+
+  cidr_ipv4 = "10.0.0.0/8"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_443_from_cgnat" {
+  security_group_id = aws_security_group.internal_nlb_sg.id
+
+  description = "Allow traffic from private subnets"
+  ip_protocol = "tcp"
+  from_port   = 443
+  to_port     = 443
+
+  cidr_ipv4 = "100.64.0.0/16"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_443_from_rfc1918_172" {
+  security_group_id = aws_security_group.internal_nlb_sg.id
+
+  description = "Allow traffic from private subnets"
+  ip_protocol = "tcp"
+  from_port   = 443
+  to_port     = 443
+
+  cidr_ipv4 = "172.16.0.0/12"
+}
+
+############################################
+# Ingress: allow 443 from self (health checks)
+############################################
+resource "aws_vpc_security_group_ingress_rule" "allow_443_from_self" {
+  security_group_id = aws_security_group.internal_nlb_sg.id
+
+  description = "Allow traffic from NLB for health checks"
+  ip_protocol = "tcp"
+  from_port   = 443
+  to_port     = 443
+
+  referenced_security_group_id = aws_security_group.internal_nlb_sg.id
+}
+
+############################################
+# Egress: allow all protocols/ports to private ranges
+############################################
+resource "aws_vpc_security_group_egress_rule" "egress_all_to_10" {
+  security_group_id = aws_security_group.internal_nlb_sg.id
+
+  description = "Allow Outbound traffic from NLB"
+  ip_protocol = "-1"
+
+  cidr_ipv4 = "10.0.0.0/8"
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_all_to_100_64" {
+  security_group_id = aws_security_group.internal_nlb_sg.id
+
+  description = "Allow Outbound traffic from NLB"
+  ip_protocol = "-1"
+
+  cidr_ipv4 = "100.64.0.0/16"
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_all_to_172_16" {
+  security_group_id = aws_security_group.internal_nlb_sg.id
+
+  description = "Allow Outbound traffic from NLB"
+  ip_protocol = "-1"
+
+  cidr_ipv4 = "172.16.0.0/12"
 }
