@@ -22,3 +22,9 @@ variable "tenant" {
   description = "The tenant name"
   type        = string
 }
+
+variable "external_ingress" {
+  type        = bool
+  description = "Whether to create external ACM Cert for Public Zone"
+  default     = false
+}
